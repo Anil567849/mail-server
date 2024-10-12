@@ -11,6 +11,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const smtp_server_1 = require("smtp-server");
 const mailparser_1 = require("mailparser");
+const client_1 = require("@prisma/client");
+const prisma = new client_1.PrismaClient();
 const server = new smtp_server_1.SMTPServer({
     allowInsecureAuth: true, // no auth required
     authOptional: true, // no auth required
@@ -33,11 +35,17 @@ const server = new smtp_server_1.SMTPServer({
     },
     onData(stream, session, callback) {
         return __awaiter(this, void 0, void 0, function* () {
+            var _a;
             try {
                 const parsedData = yield (0, mailparser_1.simpleParser)(stream);
-                console.log("Email received!");
-                console.log("Subject:", parsedData.subject);
-                console.log("Body:", parsedData.text);
+                const to = getFirstEmail(parsedData.to);
+                const from = (_a = parsedData.from) === null || _a === void 0 ? void 0 : _a.text;
+                const subject = parsedData.subject;
+                const body = parsedData.text;
+                if (to && from && subject && body) {
+                    yield saveToDB(to, from, subject, body);
+                    console.log('saved to db');
+                }
             }
             catch (err) {
                 console.error("Error parsing email:", err);
@@ -48,4 +56,29 @@ const server = new smtp_server_1.SMTPServer({
         });
     }
 });
+function getFirstEmail(emails) {
+    let to = "";
+    if (Array.isArray(emails)) {
+        to = emails[0].text || "";
+    }
+    else if (emails && typeof emails === 'object') {
+        to = emails.text || "";
+    }
+    else {
+        to = String(emails || "");
+    }
+    return to;
+}
+function saveToDB(to, from, subject, body) {
+    return __awaiter(this, void 0, void 0, function* () {
+        yield prisma.email.create({
+            data: {
+                from,
+                to,
+                subject,
+                body,
+            }
+        });
+    });
+}
 server.listen(25, () => console.log("smtp server connected"));

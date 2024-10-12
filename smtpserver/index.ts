@@ -1,5 +1,8 @@
 import {SMTPServer} from 'smtp-server';
-import {ParsedMail, simpleParser} from "mailparser";
+import {AddressObject, ParsedMail, simpleParser} from "mailparser";
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
 
 const server = new SMTPServer({
     allowInsecureAuth: true, // no auth required
@@ -27,9 +30,16 @@ const server = new SMTPServer({
     async onData(stream, session, callback){
         try {
             const parsedData: ParsedMail = await simpleParser(stream);
-            console.log("Email received!", session.id);
-            console.log("Subject:", parsedData.subject);
-            console.log("Body:", parsedData.text);
+            const to = getFirstEmail(parsedData.to);
+            const from = parsedData.from?.text;
+            const subject = parsedData.subject;
+            const body = parsedData.text;
+
+            if(to && from && subject && body){
+                await saveToDB(to, from, subject, body);
+                console.log('saved to db');                
+            }
+
         } catch (err) {
             console.error("Error parsing email:", err)
         } finally {
@@ -37,5 +47,28 @@ const server = new SMTPServer({
         }
     }
 });
+
+function getFirstEmail(emails: AddressObject | AddressObject[] | undefined){
+    let to = "";
+    if (Array.isArray(emails)) {
+        to = emails[0].text || "";
+      } else if (emails && typeof emails === 'object') {
+        to = emails.text || "";
+      } else {
+        to = String(emails || "");
+      }
+      return to;
+}
+
+async function saveToDB(to: string, from: string, subject: string, body: string){
+    await prisma.email.create({
+        data: {
+            from,
+            to,
+            subject,
+            body,
+        }
+    })
+}
 
 server.listen(25, () => console.log("smtp server connected"));

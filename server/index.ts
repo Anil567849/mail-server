@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 const app = express();
-import nodemailer from "nodemailer";
 import cors from 'cors';
+import { sendTestEmail } from './lib/mail/sendMail';
 
 app.use(express.json());
 app.use(cors({
@@ -12,28 +12,8 @@ app.post("/api/send-mail", async (req: Request, res: Response) => {
 
     const {from, to, subject, body} = req.body;
 
-    async function sendTestEmail() {
-        let transporter = nodemailer.createTransport({
-          host: "localhost",
-          port: 25,
-          secure: false, // no SSL
-          tls: {
-            rejectUnauthorized: false,
-          },
-        });
-      
-        let info = await transporter.sendMail({
-          from,
-          to,
-          subject,
-          text: body,
-        });
-      
-        console.log("Message sent: %s", info.messageId);
-    }
-
     try {
-        await sendTestEmail()
+        await sendTestEmail(from, to, subject, body)
         res.status(200).json({data: "mail sent"})
     } catch (error) {
         res.status(500).json({data: `mail not sent ${error}`})

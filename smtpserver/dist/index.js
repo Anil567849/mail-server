@@ -1,6 +1,16 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const smtp_server_1 = require("smtp-server");
+const mailparser_1 = require("mailparser");
 const server = new smtp_server_1.SMTPServer({
     allowInsecureAuth: true, // no auth required
     authOptional: true, // no auth required
@@ -22,10 +32,20 @@ const server = new smtp_server_1.SMTPServer({
         // callback(new Error("we don't have user with this mail")); // reject
     },
     onData(stream, session, callback) {
-        stream.on("data", (data) => {
-            console.log('mail data', data.toString(), session.id);
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const parsedData = yield (0, mailparser_1.simpleParser)(stream);
+                console.log("Email received!");
+                console.log("Subject:", parsedData.subject);
+                console.log("Body:", parsedData.text);
+            }
+            catch (err) {
+                console.error("Error parsing email:", err);
+            }
+            finally {
+                callback();
+            }
         });
-        stream.on("end", callback); // accepted
     }
 });
 server.listen(25, () => console.log("smtp server connected"));

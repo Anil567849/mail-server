@@ -1,4 +1,5 @@
 import {SMTPServer} from 'smtp-server';
+import {ParsedMail, simpleParser} from "mailparser";
 
 const server = new SMTPServer({
     allowInsecureAuth: true, // no auth required
@@ -23,11 +24,17 @@ const server = new SMTPServer({
         // callback(new Error("we don't have user with this mail")); // reject
     },
 
-    onData(stream, session, callback){
-        stream.on("data", (data) => {
-            console.log('mail data', data.toString(), session.id);
-        })
-        stream.on("end", callback); // accepted
+    async onData(stream, session, callback){
+        try {
+            const parsedData: ParsedMail = await simpleParser(stream);
+            console.log("Email received!", session.id);
+            console.log("Subject:", parsedData.subject);
+            console.log("Body:", parsedData.text);
+        } catch (err) {
+            console.error("Error parsing email:", err)
+        } finally {
+            callback();
+        }
     }
 });
 

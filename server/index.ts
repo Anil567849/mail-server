@@ -1,13 +1,13 @@
 import express, { Request, Response } from 'express';
 const app = express();
 import cors from 'cors';
-import { sendTestEmail } from './lib/mail/sendMail';
+import { sendTestEmail } from './lib/mail/sendTestMail';
+import { sendEmail } from './lib/mail/sendMail';
 
 app.use(express.json());
 app.use(cors({
   origin: "http://localhost:3000"
 }))
-
 
 // send testing mail to my own server at port 25
 app.post("/api/send-test-mail", async (req: Request, res: Response) => {
@@ -27,7 +27,12 @@ app.post("/api/send-test-mail", async (req: Request, res: Response) => {
 app.post("/api/send-mail", async (req: Request, res: Response) => {
 
     const {from, to, subject, body} = req.body;
-    res.status(200).json({data: "mail send is not available"})
+    try {
+        await sendEmail(from, to, subject, body);
+        res.status(200).json({ message: 'Email sent successfully' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to send email' });
+    }
 
 })
 

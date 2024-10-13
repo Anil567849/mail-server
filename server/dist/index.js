@@ -15,19 +15,34 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const app = (0, express_1.default)();
 const cors_1 = __importDefault(require("cors"));
+const sendTestMail_1 = require("./lib/mail/sendTestMail");
 const sendMail_1 = require("./lib/mail/sendMail");
 app.use(express_1.default.json());
 app.use((0, cors_1.default)({
     origin: "http://localhost:3000"
 }));
-app.post("/api/send-mail", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+// send testing mail to my own server at port 25
+app.post("/api/send-test-mail", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { from, to, subject, body } = req.body;
     try {
-        yield (0, sendMail_1.sendTestEmail)(from, to, subject, body);
+        yield (0, sendTestMail_1.sendTestEmail)(from, to, subject, body);
         res.status(200).json({ data: "mail sent" });
     }
     catch (error) {
         res.status(500).json({ data: `mail not sent ${error}` });
+    }
+}));
+// send mail to any email provider
+app.post("/api/send-mail", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { from, to, subject, body } = req.body;
+    try {
+        // startTestClient(from, to, subject, body);
+        yield (0, sendMail_1.sendEmail)(from, to, subject, body);
+        res.status(200).json({ message: 'Email sent successfully' });
+    }
+    catch (error) {
+        console.error('Error sending email:', error);
+        res.status(500).json({ error: 'Failed to send email' });
     }
 }));
 app.listen(8000, () => console.log("listening on port", 8000));

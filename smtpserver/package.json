@@ -12,11 +12,13 @@
   "dependencies": {
     "@prisma/client": "^5.20.0",
     "@types/smtp-server": "^3.5.10",
+    "kafkajs": "^2.2.4",
     "mailparser": "^3.7.1",
     "nodemailer": "^6.9.15",
     "smtp-server": "^3.13.5"
   },
   "devDependencies": {
+    "@types/kafkajs": "^1.9.0",
     "@types/mailparser": "^3.4.5",
     "@types/node": "^22.7.5",
     "prisma": "^5.20.0",

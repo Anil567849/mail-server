@@ -6,7 +6,7 @@ interface IFormData {
     toEmail: string;
     subject: string;
     body: string;
-  }
+}
 
 const EmailForm = () => {
 

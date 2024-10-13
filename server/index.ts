@@ -8,7 +8,9 @@ app.use(cors({
   origin: "http://localhost:3000"
 }))
 
-app.post("/api/send-mail", async (req: Request, res: Response) => {
+
+// send testing mail to my own server at port 25
+app.post("/api/send-test-mail", async (req: Request, res: Response) => {
 
     const {from, to, subject, body} = req.body;
 
@@ -18,6 +20,14 @@ app.post("/api/send-mail", async (req: Request, res: Response) => {
     } catch (error) {
         res.status(500).json({data: `mail not sent ${error}`})
     }
+
+})
+
+// send mail to any email provider
+app.post("/api/send-mail", async (req: Request, res: Response) => {
+
+    const {from, to, subject, body} = req.body;
+    res.status(200).json({data: "mail send is not available"})
 
 })
 

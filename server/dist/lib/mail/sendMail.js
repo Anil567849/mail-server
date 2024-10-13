@@ -12,22 +12,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
-const app = (0, express_1.default)();
-const cors_1 = __importDefault(require("cors"));
-const sendMail_1 = require("./lib/mail/sendMail");
-app.use(express_1.default.json());
-app.use((0, cors_1.default)({
-    origin: "http://localhost:3000"
-}));
-app.post("/api/send-mail", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { from, to, subject, body } = req.body;
-    try {
-        yield (0, sendMail_1.sendTestEmail)(from, to, subject, body);
-        res.status(200).json({ data: "mail sent" });
-    }
-    catch (error) {
-        res.status(500).json({ data: `mail not sent ${error}` });
-    }
-}));
-app.listen(8000, () => console.log("listening on port", 8000));
+exports.sendTestEmail = sendTestEmail;
+const nodemailer_1 = __importDefault(require("nodemailer"));
+function sendTestEmail(from, to, subject, body) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let transporter = nodemailer_1.default.createTransport({
+            host: "localhost",
+            port: 25,
+            secure: false, // no SSL
+            tls: {
+                rejectUnauthorized: false,
+            },
+        });
+        let info = yield transporter.sendMail({
+            from,
+            to,
+            subject,
+            text: body,
+        });
+        console.log("Message sent: %s", info.messageId);
+    });
+}

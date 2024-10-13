@@ -36,12 +36,10 @@ app.post("/api/send-test-mail", (req, res) => __awaiter(void 0, void 0, void 0, 
 app.post("/api/send-mail", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { from, to, subject, body } = req.body;
     try {
-        // startTestClient(from, to, subject, body);
         yield (0, sendMail_1.sendEmail)(from, to, subject, body);
         res.status(200).json({ message: 'Email sent successfully' });
     }
     catch (error) {
-        console.error('Error sending email:', error);
         res.status(500).json({ error: 'Failed to send email' });
     }
 }));

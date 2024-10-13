@@ -1,11 +1,14 @@
 {
   "dependencies": {
     "cors": "^2.8.5",
+    "dkim-signer": "^0.2.2",
     "express": "^4.21.1",
+    "node-dkim": "^0.0.3",
     "nodemailer": "^6.9.15"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
+    "@types/dkim-signer": "^0.2.5",
     "@types/express": "^5.0.0",
     "@types/nodemailer": "^6.4.16"
   }

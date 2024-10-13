@@ -1,7 +1,8 @@
 import net from 'net';
 import dns from 'dns';
 import readline from 'readline';
-import { buildEmailContent, sleep } from './utils';
+import { buildEmailContent, buildEmailContentForDKIM, signEmailWithDKIM } from './utils';
+import fs from 'fs';
 
 /*
 // we can use npm smtp - server
@@ -130,20 +131,30 @@ export async function sendEmail(sender: string, recipient: string, subject: stri
     return new Promise((resolve, reject) => {
 
         const domain = recipient.split('@')[1]; // a@anil.com = anil.com
-        dns.resolveMx(domain, (err, addresses) => {
+        dns.resolveMx(domain, async (err, addresses) => {
             if (err) {
                 console.error('Error resolving MX records:', err);
                 reject(`Error resolving MX records: ${err}`);
+                return;
             }
 
             // const TARGET_SERVER = addresses[0].exchange; // eg: mail.anil.com
             const TARGET_SERVER = 'localhost'; // Testing
-
-            const content = buildEmailContent(sender, recipient, subject, body);
+            
+                // For DKIM Sign
+                // let content = ""
+                // try {
+                //     content = await buildEmailContentForDKIM(sender, recipient, subject, body);
+                // } catch (dkimError) {
+                //     console.error('Error signing email with DKIM:', dkimError);
+                //     reject(`Error signing email with DKIM: ${dkimError}`);
+                //     return;
+                // }
+            let content = buildEmailContent(sender, recipient, subject, body);
 
             const client = new net.Socket();
             const TARGET_SMTP_PORT: 25 | 465 | 587 = 25;
-            client.connect(5, TARGET_SERVER, () => { // my port is 25 and hosted on localhost
+            client.connect(TARGET_SMTP_PORT, TARGET_SERVER, () => { // my port is 25 and hosted on localhost
                 // client.connect(465, 'mail.gmail.com', () => {
                 console.log('Connected to target server');
                 const rl = readline.createInterface({

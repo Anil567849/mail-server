@@ -142,17 +142,27 @@ function sendEmail(sender, recipient, subject, body) {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve, reject) => {
             const domain = recipient.split('@')[1]; // a@anil.com = anil.com
-            dns_1.default.resolveMx(domain, (err, addresses) => {
+            dns_1.default.resolveMx(domain, (err, addresses) => __awaiter(this, void 0, void 0, function* () {
                 if (err) {
                     console.error('Error resolving MX records:', err);
                     reject(`Error resolving MX records: ${err}`);
+                    return;
                 }
                 // const TARGET_SERVER = addresses[0].exchange; // eg: mail.anil.com
                 const TARGET_SERVER = 'localhost'; // Testing
-                const content = (0, utils_1.buildEmailContent)(sender, recipient, subject, body);
+                // For DKIM Sign
+                // let content = ""
+                // try {
+                //     content = await buildEmailContentForDKIM(sender, recipient, subject, body);
+                // } catch (dkimError) {
+                //     console.error('Error signing email with DKIM:', dkimError);
+                //     reject(`Error signing email with DKIM: ${dkimError}`);
+                //     return;
+                // }
+                let content = (0, utils_1.buildEmailContent)(sender, recipient, subject, body);
                 const client = new net_1.default.Socket();
                 const TARGET_SMTP_PORT = 25;
-                client.connect(5, TARGET_SERVER, () => {
+                client.connect(TARGET_SMTP_PORT, TARGET_SERVER, () => {
                     // client.connect(465, 'mail.gmail.com', () => {
                     console.log('Connected to target server');
                     const rl = readline_1.default.createInterface({
@@ -200,7 +210,7 @@ function sendEmail(sender, recipient, subject, body) {
                 client.on('close', () => {
                     console.log('SMTP connection closed');
                 });
-            });
+            }));
         });
     });
 }

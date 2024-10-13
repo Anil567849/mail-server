@@ -38,6 +38,10 @@ const server = new SMTPServer({
     },
 
     async onData(stream, session, callback){
+        // stream.on("data", (data) => {
+        //     console.log('mail data', data.toString(), session.id);
+        // })
+        
         try {
             const parsedData: ParsedMail = await simpleParser(stream);
             const to = getFirstEmail(parsedData.to);
